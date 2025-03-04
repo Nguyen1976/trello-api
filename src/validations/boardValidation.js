@@ -19,17 +19,11 @@ const createNew = async (req, res, next) => {
   })
 
   try {
-    console.log(req.body)
 
     await correctCondition.validateAsync(req.body, {
       abortEarly: false //abortEarly là dừng lại ngay khi gặp lỗi đầu tiên phải set về false để nó log hết lỗi ra
     })
-
-    // next()
-
-    res
-      .status(StatusCodes.CREATED)
-      .json({ message: 'POST from Validation: API create new board' })
+    next()
   } catch (error) {
     console.log(error)
     //UNPROCESSABLE_ENTITY: 422 - Thực thể dữ liệu không thể thực thi tức là dữ liệu truyền vào k đúng định dạng
