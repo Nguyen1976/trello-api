@@ -8,6 +8,9 @@ import { APIs_v1 } from '~/routes/v1'
 const START_SERVER = async () => {
   const app = express()
 
+  app.use(express.json())
+
+  //Use APIs v1
   app.use('/v1', APIs_v1)
 
   app.listen(env.APP_PORT, env.APP_HOST, () => {
