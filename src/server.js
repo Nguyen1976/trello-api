@@ -1,22 +1,14 @@
 /*eslint-disable no-console */
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
-
 import express from 'express'
-import { CONNECT_DB, GET_DB, CLOSE_DB } from './config/mongodb.js'
+import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb.js'
 import exitHook from 'async-exit-hook'
-import { env } from './config/environment.js'
+import { env } from '~/config/environment.js'
+import { APIs_v1 } from '~/routes/v1'
 
 const START_SERVER = async () => {
   const app = express()
 
-  app.get('/', async (req, res) => {
-    console.log(await GET_DB().listCollections().toArray())
-    res.end('<h1>Hello World!</h1><hr>')
-  })
+  app.use('/v1', APIs_v1)
 
   app.listen(env.APP_PORT, env.APP_HOST, () => {
     // eslint-disable-next-line no-console

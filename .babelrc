@@ -17,3 +17,7 @@
     ]
   ]
 }
+
+//Quan trọng!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*Phải sử dụng type: commonjs trong package.json thì alias mới hoạt động vì common js là xử lý đồng bộ lên nó sẽ dùng babel để transpile(là quá trình biên dịch mã nguồn từ ngôn ngữ này sang ngôn ngữ khác) trước lên khi chạy nodejs alias đã được thay thế 
+*/
