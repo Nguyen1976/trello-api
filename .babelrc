@@ -6,7 +6,14 @@
 {
   "presets": ["@babel/preset-env"],
   "plugins": [
-    ["@babel/transform-runtime"],
-    ["module-resolver", { "alias": { "~": "./src" } }]
+    [
+      "module-resolver",
+      {
+        "root": ["./src"],
+        "alias": {
+          "~": "./src"
+        }
+      }
+    ]
   ]
 }
