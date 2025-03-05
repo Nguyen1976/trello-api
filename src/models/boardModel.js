@@ -54,9 +54,25 @@ export const findOneById = async (id) => {
   }
 }
 
+//Query tổng hợp để lấy toàn bộ Columns và Cards thuộc về Board (Tức là chúng ta đang phải joi các bảng lại với nhau để lấy dữ liệu)
+export const getDetails = async (id) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOne({
+        _id: new ObjectId(id)
+      })
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  getDetails
 }
