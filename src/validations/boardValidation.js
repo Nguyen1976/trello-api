@@ -5,6 +5,7 @@
  */
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
+import ApiError from '~/utils/ApiError'
 
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
@@ -19,17 +20,20 @@ const createNew = async (req, res, next) => {
   })
 
   try {
-
     await correctCondition.validateAsync(req.body, {
       abortEarly: false //abortEarly là dừng lại ngay khi gặp lỗi đầu tiên phải set về false để nó log hết lỗi ra
     })
     next()
   } catch (error) {
-    console.log(error)
+    // const errorMessage = new Error(error).message //Vì lỗi trả về từ thư viện Joi lên phải bọc trong new Error
+    // const customError = new ApiError(
+    //   StatusCodes.UNPROCESSABLE_ENTITY,
+    //   errorMessage
+    // )
     //UNPROCESSABLE_ENTITY: 422 - Thực thể dữ liệu không thể thực thi tức là dữ liệu truyền vào k đúng định dạng
-    res
-      .status(StatusCodes.UNPROCESSABLE_ENTITY)
-      .json({ errors: new Error(error).message })
+    next(
+      new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
+    )
   }
 }
 
