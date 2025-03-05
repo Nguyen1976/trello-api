@@ -7,6 +7,7 @@ import { slugify } from '~/utils/formatters'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
+import { cloneDeep } from 'lodash'
 const createNew = async (reqBody) => {
   try {
     const newBoard = {
@@ -36,7 +37,33 @@ const getDetails = async (boardId) => {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
     }
 
-    return board
+    //begin
+    //Xử lý dữ liệu bên be để phù hợp với bên fe vì ban đầu dữ liệu trả về là board chứ mảng card và mảng column, nhưng thứ chúng ta cần là board chứa mảng column và column chứa mảng card(dữ liệu giống như mockData bên fe)
+    //https://www.youtube.com/watch?v=EQVWMjKo1PI&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=70
+    //VD:
+    /**
+     * board: {
+     *  columns: [
+     *    {
+     *      cards: [{...}, {...}]
+     *    },
+     *    ...
+     *  ]
+     * }
+     */
+    const resBoard = cloneDeep(board)
+    resBoard.columns.forEach((column) => {
+      // column.cards = resBoard.cards.filter(
+      //   (card) => card.columnId.toString() === column._id.toString()
+      // )
+      column.cards = resBoard.cards.filter((card) =>
+        card.columnId.equals(column._id)
+      )
+    })
+
+    delete resBoard.cards //vì chúng ta k cần mảng cards ở bên trong board nữa vì ta đã sắp xếp đừa card về dùng column mà chúng đứng rồi
+    //end
+    return resBoard
   } catch (error) {
     throw error
   }
