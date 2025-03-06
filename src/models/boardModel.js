@@ -88,10 +88,9 @@ export const getDetails = async (id) => {
         }
       ])
       .toArray()
-    console.log(result)
 
     //vì id của board là unique nhưng aggregate vẫn sẽ trả về mảng
-    return result[0] || {}
+    return result[0] || null
   } catch (error) {
     throw new Error(error)
   }
