@@ -32,7 +32,7 @@ const validateBeforeCreate = async (data) => {
   })
 }
 
-const createNew = async (data) => {
+export const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
     const createdBoard = await GET_DB()
