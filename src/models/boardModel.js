@@ -146,7 +146,6 @@ const update = async (boardId, updateData) => {
           returnDocument: 'after' //trường này để giúp chúng ta trả về bản ghi board sau khi đã cập nhật nếu k nó sẽ trả về bản ghi board tước khi được cập nhật
         }
       )
-    console.log(result)
     return result
   } catch (error) {
     throw new Error(error)

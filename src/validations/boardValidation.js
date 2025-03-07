@@ -48,17 +48,11 @@ const update = async (req, res, next) => {
 
   try {
     await correctCondition.validateAsync(req.body, {
-      abortEarly: false, //abortEarly là dừng lại ngay khi gặp lỗi đầu tiên phải set về false để nó log hết lỗi ra
+      abortEarly: false, 
       allowUnknown: true//Đối vói trường hợp update để k cần đẩy 1 số field lên
     })
     next()
   } catch (error) {
-    // const errorMessage = new Error(error).message //Vì lỗi trả về từ thư viện Joi lên phải bọc trong new Error
-    // const customError = new ApiError(
-    //   StatusCodes.UNPROCESSABLE_ENTITY,
-    //   errorMessage
-    // )
-    //UNPROCESSABLE_ENTITY: 422 - Thực thể dữ liệu không thể thực thi tức là dữ liệu truyền vào k đúng định dạng
     next(
       new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
     )
