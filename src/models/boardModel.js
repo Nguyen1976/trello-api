@@ -5,6 +5,7 @@ import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
+import { resolveSoa } from 'dns'
 
 //https://github.com/trungquandev/trungquandev-public-utilities-algorithms/blob/main/14-trello-mongodb-schemas/boardModel.js
 
@@ -25,6 +26,9 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
+
+//Chỉ ra những field mà chúng ta không muốn cho phép cập nhật trong hàm update()
+const INVALID_UPDATE_FIELD = ['_id', 'createAt']
 
 const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, {
@@ -111,10 +115,39 @@ const pushColumnOrderIds = async (column) => {
           }
         },
         {
-          returnDocument: 'after',//trường này để giúp chúng ta trả về bản ghi board sau khi đã cập nhật nếu k nó sẽ trả về bản ghi board tước khi được cập nhật
+          returnDocument: 'after' //trường này để giúp chúng ta trả về bản ghi board sau khi đã cập nhật nếu k nó sẽ trả về bản ghi board tước khi được cập nhật
         }
       )
-    return result.value
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const update = async (boardId, updateData) => {
+  try {
+    //Lọc những field không cho phép cập nhật
+    Object.keys(updateData).forEach((fieldName) => {
+      if (INVALID_UPDATE_FIELD.includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
+
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(boardId)
+        },
+        {
+          $set: updateData
+        },
+        {
+          returnDocument: 'after' //trường này để giúp chúng ta trả về bản ghi board sau khi đã cập nhật nếu k nó sẽ trả về bản ghi board tước khi được cập nhật
+        }
+      )
+    console.log(result)
+    return result
   } catch (error) {
     throw new Error(error)
   }
@@ -126,7 +159,8 @@ export const boardModel = {
   createNew,
   findOneById,
   getDetails,
-  pushColumnOrderIds
+  pushColumnOrderIds,
+  update
 }
 
 // "_id": {

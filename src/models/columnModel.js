@@ -84,7 +84,7 @@ const pushCardOrderIds = async (card) => {
           returnDocument: 'after' //trường này để giúp chúng ta trả về bản ghi board sau khi đã cập nhật nếu k nó sẽ trả về bản ghi board tước khi được cập nhật
         }
       )
-    return result.value
+    return result
   } catch (error) {
     throw new Error(error)
   }
