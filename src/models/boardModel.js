@@ -6,6 +6,7 @@ import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { resolveSoa } from 'dns'
+import { isEmpty } from 'lodash'
 
 //https://github.com/trungquandev/trungquandev-public-utilities-algorithms/blob/main/14-trello-mongodb-schemas/boardModel.js
 
@@ -132,6 +133,12 @@ const update = async (boardId, updateData) => {
         delete updateData[fieldName]
       }
     })
+
+    if (!isEmpty(updateData.columnOrderIds)) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(
+        (c) => new ObjectId(c)
+      )
+    }
 
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
