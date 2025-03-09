@@ -21,12 +21,23 @@ const START_SERVER = async () => {
   //Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    // eslint-disable-next-line no-console
-    console.log(
-      `3. ${env.AUTHOR} is running at ${env.APP_HOST}:${env.APP_PORT}/`
-    )
-  })
+  //Môi trường production (cụ thể đang support cho render)
+  if (env.BUILD_MODE === 'production') {
+    //Vì thằng env nó tự có PORT và sẽ tự chỉ định PORT cho mình lên sẽ như này....
+    app.listen(process.env.PORT, () => {
+      // eslint-disable-next-line no-console
+      console.log(
+        `3. Production: ${env.AUTHOR} BE is running at PORT:${process.env.PORT}/`
+      )
+    })
+  } else {
+    app.listen(env.APP_PORT, env.APP_HOST, () => {
+      // eslint-disable-next-line no-console
+      console.log(
+        `3. Local DEV: ${env.AUTHOR} is running at ${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}/`
+      )
+    })
+  }
 
   exitHook(() => {
     CLOSE_DB()
