@@ -39,7 +39,7 @@ const validateBeforeCreate = async (data) => {
   })
 }
 
-export const createNew = async (data) => {
+const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
     const newColumnToAdd = {
@@ -56,12 +56,26 @@ export const createNew = async (data) => {
   }
 }
 
-export const findOneById = async (id) => {
+const findOneById = async (columnId) => {
   try {
     const result = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
       .findOne({
-        _id: new ObjectId(id)
+        _id: new ObjectId(columnId)
+      })
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const deleteOneById = async (columnId) => {
+  try {
+    const result = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .deleteOne({
+        _id: new ObjectId(columnId)
       })
 
     return result
@@ -133,5 +147,6 @@ export const columnModel = {
   createNew,
   findOneById,
   pushCardOrderIds,
-  update
+  update,
+  deleteOneById
 }
