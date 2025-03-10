@@ -7,7 +7,7 @@
 //Những domain được phép truy cập tới tài nguyên của server
 export const WHITELIST_DOMAINS = [
   // 'http://localhost:5173'//Không cần localhost nữ vì ở file config/cors đã luôn cho phép môi trường dev
-
+  'https://trello-web-flax-nine.vercel.app/'
 ]
 
 export const BOARD_TYPES = {
