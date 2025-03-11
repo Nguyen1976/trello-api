@@ -1,3 +1,5 @@
+import { pick } from 'lodash'
+
 //convert string to slug
 export const slugify = (val) => {
   if (!val) return ''
@@ -11,3 +13,18 @@ export const slugify = (val) => {
     .replace(/-+/g, '-') // remove consecutive hyphens
 }
 
+//Nhận vào thông tin user và chỉ lẩy những trường chúng ta cần
+export const pickUser = (user) => {
+  if (!user) return {}
+  return pick(user, [
+    '_id',
+    'email',
+    'username',
+    'displayName',
+    'avatar',
+    'role',
+    'isActive',
+    'createdAt',
+    'updatedAt'
+  ])
+}
