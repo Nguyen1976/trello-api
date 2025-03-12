@@ -50,8 +50,6 @@ const createNew = async (reqBody) => {
       customSubject,
       htmlContent
     )
-    console.log('🚀 ~ userService.js:49 ~ resultEmail:', resultEmail)
-
     return pickUser(getNewUser)
   } catch (error) {
     throw error
@@ -119,14 +117,15 @@ const login = async (reqBody) => {
     const accessToken = await JWTProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET_SIGNATURE,
-      // 5 //5s
       env.ACCESS_TOKEN_LIFE
+      // 5 //5s
     )
 
     const refreshToken = await JWTProvider.generateToken(
       userInfo,
       env.REFRESH_TOKEN_SECRET_SIGNATURE,
       env.REFRESH_TOKEN_LIFE
+      // 15
     )
 
     return {
@@ -140,8 +139,34 @@ const login = async (reqBody) => {
   }
 }
 
+const refreshToken = async (clientRefreshToken) => {
+  try {
+    const refreshTokenDecoded = await JWTProvider.verifyToken(
+      clientRefreshToken,
+      env.REFRESH_TOKEN_SECRET_SIGNATURE
+    )
+
+    const userInfo = {
+      _id: refreshTokenDecoded._id,
+      email: refreshTokenDecoded.email
+    }
+
+    const accessToken = await JWTProvider.generateToken(
+      userInfo,
+      env.ACCESS_TOKEN_SECRET_SIGNATURE,
+      env.ACCESS_TOKEN_LIFE
+      // 5
+    )
+
+    return { accessToken }
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   verifyAccount,
-  login
+  login,
+  refreshToken
 }

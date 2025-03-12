@@ -14,7 +14,7 @@ const createNew = async (req, res, next) => {
 
     res.status(StatusCodes.CREATED).json(createdBoard)
   } catch (error) {
-    next(error)
+    next(error)//Khi để next error mặc định sẽ chạy vào errorHandlingMiddleware
   }
 }
 
