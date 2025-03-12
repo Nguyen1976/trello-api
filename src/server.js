@@ -7,9 +7,20 @@ import exitHook from 'async-exit-hook'
 import { env } from '~/config/environment.js'
 import { APIs_v1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware.js'
+import cookieParser from 'cookie-parser'
 
 const START_SERVER = async () => {
   const app = express()
+
+  //Fix bug cache from disk của expressJs
+  //https://stackoverflow.com/a/53240717/8324172
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store')
+    next()
+  })
+
+  //Cấu hình cookie parser
+  app.use(cookieParser())
 
   app.use(cors(corsOptions))
 

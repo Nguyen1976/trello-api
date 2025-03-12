@@ -45,7 +45,12 @@ const createNew = async (reqBody) => {
     `
 
     //Gọi tới provider gửi mail đang có bug
-    // const resultEmail = await BrevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent)
+    const resultEmail = await BrevoProvider.sendEmail(
+      getNewUser.email,
+      customSubject,
+      htmlContent
+    )
+    console.log('🚀 ~ userService.js:49 ~ resultEmail:', resultEmail)
 
     return pickUser(getNewUser)
   } catch (error) {
@@ -114,6 +119,7 @@ const login = async (reqBody) => {
     const accessToken = await JWTProvider.generateToken(
       userInfo,
       env.ACCESS_TOKEN_SECRET_SIGNATURE,
+      // 5 //5s
       env.ACCESS_TOKEN_LIFE
     )
 
