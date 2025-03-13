@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/formatters'
 
 import { WEBSITE_DOMAIN } from '~/utils/constants'
-import { BrevoProvider } from '~/providers/BrevoProvider'
+import { EmailProvider } from '~/providers/SendEmailProvider'
 import { JWTProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
 
@@ -35,7 +35,7 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
     //Gửi email cho người dùng xác thực tài khoản
-    const verifycationLink = `${WEBSITE_DOMAIN}/account/verifycation?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+    const verifycationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     const customSubject =
       'Trello web MERN Stack: Please verify your email before using our services!'
     const htmlContent = `
@@ -45,7 +45,7 @@ const createNew = async (reqBody) => {
     `
 
     //Gọi tới provider gửi mail đang có bug
-    const resultEmail = await BrevoProvider.sendEmail(
+    EmailProvider.sendEmail(
       getNewUser.email,
       customSubject,
       htmlContent
