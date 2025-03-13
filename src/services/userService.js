@@ -7,8 +7,9 @@ import { pickUser } from '~/utils/formatters'
 
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { EmailProvider } from '~/providers/SendEmailProvider'
-import { JWTProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
+import { JWTProvider } from '~/providers/JwtProvider'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 
 const createNew = async (reqBody) => {
   try {
@@ -160,7 +161,7 @@ const refreshToken = async (clientRefreshToken) => {
   }
 }
 
-const update = async (userId, reqBody) => {
+const update = async (userId, reqBody, userAvatarFile) => {
   try {
     //Query user và kiểm tra cho chắc chắn
     const existUser = await userModel.findOneById(userId)
@@ -177,7 +178,7 @@ const update = async (userId, reqBody) => {
     //Trường hợp change password
     if (reqBody.current_password && reqBody.new_password) {
       //Kiểm tra currentPassword có đúng không
-      
+
       if (!bcrypt.compareSync(reqBody.current_password, existUser.password)) {
         throw new ApiError(
           StatusCodes.NOT_ACCEPTABLE,
@@ -188,13 +189,21 @@ const update = async (userId, reqBody) => {
       updatedUser = await userModel.update(userId, {
         password: bcrypt.hashSync(reqBody.new_password, 8)
       })
+    } else if (userAvatarFile) {
+      //Trường hợp upload file lên cloudStorage (cloudinary)
+      const uploadResult = await CloudinaryProvider.streamUpload(
+        userAvatarFile.buffer,
+        'users-trello-web'
+      )
+
+      //Lưu url file ảnh vào db (secure_url)
+      updatedUser = await userModel.update(userId, {
+        avatar: uploadResult.secure_url
+      })
     } else {
       //Trường hợp update các thông tin chung như displayName
-      updatedUser = await userModel.update(userId, 
-        reqBody
-      )
+      updatedUser = await userModel.update(userId, reqBody)
     }
-
 
     return pickUser(updatedUser)
   } catch (error) {
