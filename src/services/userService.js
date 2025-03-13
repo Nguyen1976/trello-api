@@ -45,11 +45,7 @@ const createNew = async (reqBody) => {
     `
 
     //Gọi tới provider gửi mail đang có bug
-    EmailProvider.sendEmail(
-      getNewUser.email,
-      customSubject,
-      htmlContent
-    )
+    EmailProvider.sendEmail(getNewUser.email, customSubject, htmlContent)
     return pickUser(getNewUser)
   } catch (error) {
     throw error
@@ -164,9 +160,52 @@ const refreshToken = async (clientRefreshToken) => {
   }
 }
 
+const update = async (userId, reqBody) => {
+  try {
+    //Query user và kiểm tra cho chắc chắn
+    const existUser = await userModel.findOneById(userId)
+    if (!existUser)
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found')
+    if (!existUser.isActive)
+      throw new ApiError(
+        StatusCodes.NOT_ACCEPTABLE,
+        'Your account is not active'
+      )
+
+    let updatedUser = {}
+
+    //Trường hợp change password
+    if (reqBody.current_password && reqBody.new_password) {
+      //Kiểm tra currentPassword có đúng không
+      
+      if (!bcrypt.compareSync(reqBody.current_password, existUser.password)) {
+        throw new ApiError(
+          StatusCodes.NOT_ACCEPTABLE,
+          'Your current password is incorrect'
+        )
+      }
+      //Nếu như current_password đúng  thì hash 1 mật khẩu mới
+      updatedUser = await userModel.update(userId, {
+        password: bcrypt.hashSync(reqBody.new_password, 8)
+      })
+    } else {
+      //Trường hợp update các thông tin chung như displayName
+      updatedUser = await userModel.update(userId, 
+        reqBody
+      )
+    }
+
+
+    return pickUser(updatedUser)
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   verifyAccount,
   login,
-  refreshToken
+  refreshToken,
+  update
 }
