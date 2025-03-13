@@ -39,7 +39,7 @@ const transporter = nodemailer.createTransport({
   secure: false, // true for port 465, false for other ports
   auth: {
     user: env.ADMIN_EMAIL_ADDRESS,
-    pass: 'hfjx uuoh nvfm dgko' //https://myaccount.google.com/apppasswords truy cập để lấy app Password
+    pass: env.ADMIN_EMAIL_APP_PASSWORD //https://myaccount.google.com/apppasswords truy cập để lấy app Password
   }
 })
 
