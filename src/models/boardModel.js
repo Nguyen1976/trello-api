@@ -7,6 +7,7 @@ import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { resolveSoa } from 'dns'
 import { isEmpty } from 'lodash'
+import { pagingSkipValue } from '~/utils/algorithms'
 
 //https://github.com/trungquandev/trungquandev-public-utilities-algorithms/blob/main/14-trello-mongodb-schemas/boardModel.js
 
@@ -20,6 +21,15 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
 
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé, (lúc quay video số 57 mình quên nhưng sang đầu video số 58 sẽ có nhắc lại về cái này.)
   columnOrderIds: Joi.array()
+    .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+    .default([]),
+
+  //Những admin của board
+  ownerIds: Joi.array()
+    .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+    .default([]),
+  //Những thành viên của board
+  memberIds: Joi.array()
     .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
     .default([]),
 
@@ -184,6 +194,66 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    const queryConditions = [
+      //Điều kiện 01: Board chưa bị xóa
+      {
+        _destroy: false
+      },
+      //Điều kiện 02: Ông user thực hiện req thì nó phải thuộc 1 trong 2 cái mảng ownerIds hoặc memberIds sử dụng toán tử $all của mongodb
+      {
+        $or: [
+          {
+            ownerIds: { $all: [new ObjectId(userId)] }
+          },
+          {
+            memberIds: { $all: [new ObjectId(userId)] }
+          }
+        ]
+      }
+    ]
+
+    const query = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .aggregate(
+        [
+          { $match: { $and: [...queryConditions] } },
+          { $sort: { title: 1 } }, //sort title từ a-z
+          //Để xử lý nhiều luồng trong 1 query
+          {
+            $facet: {
+              //Luồng 01: Query boards
+              // prettier-ignore
+              'queryBoards': [
+              { $skip: pagingSkipValue(page, itemsPerPage) }, //Bỏ qua số lượng bản ghi của nhưng page trước đó
+              { $limit: itemsPerPage } //Giới hạn tối đa số lượng bản ghi trả về trên 1 page
+              ],
+              //Luồng 02: Quey đếm tổng số lượng bản ghi board trong db rồi trả về vào biến countedAllBoards
+              // prettier-ignore
+              'queryTotalBoards': [
+              {
+                $count: 'countedAllBoards'
+              }]
+            }
+          }
+        ],
+        //Khi sort thì mặc định chữ B hoa sẽ đứng trước chữ hoa thường  thì dòng này để fix nó
+        { collation: { locale: 'en' } }
+      )
+      .toArray()
+
+    const res = query[0]
+
+    return {
+      boards: res.queryBoards || [],
+      totalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -192,13 +262,6 @@ export const boardModel = {
   getDetails,
   pushColumnOrderIds,
   update,
-  pullColumnOrderIds
+  pullColumnOrderIds,
+  getBoards
 }
-
-// "_id": {
-//     "$oid": "67c86eacfdf0798a29ef6cbb"
-//   },
-
-//67c868e67a889567f62a968d
-
-//67c86eacfdf0798a29ef6cbb
