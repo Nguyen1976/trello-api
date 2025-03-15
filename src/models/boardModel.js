@@ -8,6 +8,8 @@ import { cardModel } from '~/models/cardModel'
 import { resolveSoa } from 'dns'
 import { isEmpty } from 'lodash'
 import { pagingSkipValue } from '~/utils/algorithms'
+import { userModel } from './userModel'
+import { pipeline } from 'stream'
 
 //https://github.com/trungquandev/trungquandev-public-utilities-algorithms/blob/main/14-trello-mongodb-schemas/boardModel.js
 
@@ -52,7 +54,7 @@ export const createNew = async (userId, data) => {
     const validData = await validateBeforeCreate(data)
     const newBoardToAdd = {
       ...validData,
-      ownerIds: [new ObjectId(userId)],
+      ownerIds: [new ObjectId(userId)]
     }
     const createdBoard = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
@@ -119,6 +121,28 @@ export const getDetails = async (userId, boardId) => {
             localField: '_id',
             foreignField: 'boardId',
             as: 'cards'
+          }
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'ownerIds',
+            foreignField: '_id',
+            as: 'owners',
+            //pileline là để xử lý 1 hoặc nhiều luồng cần thiết
+            //$project để chỉ định vài field không muốn lấy về
+            //prettier-ignore
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'memberIds',
+            foreignField: '_id',
+            as: 'members',
+            //prettier-ignore
+            pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
           }
         }
       ])
