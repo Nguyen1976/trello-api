@@ -7,7 +7,11 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import {
+  EMAIL_RULE,
+  OBJECT_ID_RULE,
+  OBJECT_ID_RULE_MESSAGE
+} from '~/utils/validators'
 
 //https://github.com/trungquandev/trungquandev-public-utilities-algorithms/blob/main/14-trello-mongodb-schemas/cardModel.js
 
@@ -25,6 +29,25 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
 
   title: Joi.string().required().min(3).max(50).trim().strict(),
   description: Joi.string().optional(),
+
+  cover: Joi.string().default(null),
+  memberIds: Joi.array()
+    .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+    .default([]),
+  comments: Joi.array()
+    .items({
+      userId: Joi.string()
+        .pattern(OBJECT_ID_RULE)
+        .message(OBJECT_ID_RULE_MESSAGE),
+      userEmail: Joi.string()
+        .pattern(EMAIL_RULE)
+        .message(OBJECT_ID_RULE_MESSAGE),
+      userAvatar: Joi.string(),
+      userDisplayName: Joi.string(),
+      content: Joi.string(),
+      commentedAt: Joi.date().timestamp()
+    })
+    .default([]),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -97,6 +120,7 @@ const update = async (cardId, updateData) => {
     if (updateData.columnId) {
       updateData.columnId = new ObjectId(updateData.columnId)
     }
+
 
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
