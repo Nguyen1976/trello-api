@@ -21,6 +21,8 @@ const isAuthorized = async (req, res, next) => {
       env.ACCESS_TOKEN_SECRET_SIGNATURE
     )
 
+    
+
     //Quan trọng: Nếu như token hợp lệ, thì sẽ cần phải lưu thông tin giải mã được vài cái req.jwtDecoded sử dụng cho cấc tầng cần xử lý
     req.jwtDecoded = accessTokenDecoded
     //Cho phép req đi tiếp
