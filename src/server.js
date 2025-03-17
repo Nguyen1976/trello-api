@@ -8,6 +8,11 @@ import { env } from '~/config/environment.js'
 import { APIs_v1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware.js'
 import cookieParser from 'cookie-parser'
+//xử lý socket realtime với socket.io
+//https://socket.io/get-started/chat#integrating-socketio
+import socketIo from 'socket.io'
+import http from 'http'
+import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 
 const START_SERVER = async () => {
   const app = express()
@@ -32,17 +37,25 @@ const START_SERVER = async () => {
   //Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
+  //Tạo một cái server mới bọc thằng app của express để làm realtime với socket.io
+  const server = http.createServer(app)
+  //Khởi tạo biến io với server và cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    inviteUserToBoardSocket(socket)
+  })
+
   //Môi trường production (cụ thể đang support cho render)
   if (env.BUILD_MODE === 'production') {
     //Vì thằng env nó tự có PORT và sẽ tự chỉ định PORT cho mình lên sẽ như này....
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(
         `3. Production: ${env.AUTHOR} BE is running at PORT:${process.env.PORT}/`
       )
     })
   } else {
-    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
       // eslint-disable-next-line no-console
       console.log(
         `3. Local DEV: ${env.AUTHOR} is running at ${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}/`
