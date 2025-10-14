@@ -29,4 +29,4 @@ jobs:
       - name: Pull image from docker hub
         run: docker pull nguyen1976/trello-api:latest
       - name: Run Docker Container
-        run: docker run -d -p 8017:8017 --name nodejs-app-container -e MONGODB_URI='${{ secrets.MONGODB_URI }}' nguyen1976/trello-api
+        run: docker run -d -p 8017:8017 --name nodejs-app-container -e MONGODB_URI='${{ secrets.MONGODB_URI }}' -e PORT=8017 -e HOST=0.0.0.0 nguyen1976/trello-api
