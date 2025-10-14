@@ -14,6 +14,7 @@ import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 
+
 const START_SERVER = async () => {
   const app = express()
 

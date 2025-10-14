@@ -1,0 +1,32 @@
+name: Deploy Node Application
+
+on:
+  push:
+    branches:
+      - mern-ec2-docker
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout Source
+              uses: actions/checkout@v4
+
+            - name: Login to docker hub
+              run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Build Docker Image
+              run: docker build -t nguyen1976/trello-api .
+
+            - name: Public Image to Docker Hub
+              run: docker push nguyen1976/trello-api:latest 
+
+    deploy:
+        needs: build
+        runs-on: self-hosted
+        steps:
+            - name: Pull image from docker hub
+              run: docker pull nguyen1976/trello-api:latest
+            - name: Run Docker Container
+              run: docker run -d -p 8017:8017 --name nodejs-app-container -e MONGODB_URI='${{ secrets.MONGODB_URI }}' nguyen1976/trello-api
