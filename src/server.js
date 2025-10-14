@@ -56,7 +56,7 @@ const START_SERVER = async () => {
       )
     })
   } else {
-    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+    server.listen(env.LOCAL_DEV_APP_PORT, '0.0.0.0', () => {
       // eslint-disable-next-line no-console
       console.log(
         `3. Local DEV: ${env.AUTHOR} is running at ${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}/`
