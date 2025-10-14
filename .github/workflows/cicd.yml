@@ -33,4 +33,24 @@ jobs:
       - name: Pull image from docker hub
         run: docker pull nguyen1976/trello-api:latest
       - name: Run Docker Container
-        run: docker run -d -p 8017:8017 --name nodejs-app-container -e MONGODB_URI='${{ secrets.MONGODB_URI }}' -e PORT=8017 -e HOST=0.0.0.0 nguyen1976/trello-api
+        run: docker run -d -p 8017:8017 \
+          --name nodejs-app-container \
+          -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
+          -e DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+          -e LOCAL_DEV_APP_HOST=${{ secrets.LOCAL_DEV_APP_HOST }} \
+          -e LOCAL_DEV_APP_PORT=${{ secrets.LOCAL_DEV_APP_PORT }} \
+          -e AUTHOR=${{ secrets.AUTHOR }} \
+          -e WEBSITE_DOMAIN_DEVELOPMENT=${{ secrets.WEBSITE_DOMAIN_DEVELOPMENT }} \
+          -e WEBSITE_DOMAIN_PRODUCTION=${{ secrets.WEBSITE_DOMAIN_PRODUCTION }} \
+          -e BREVO_API_KEY=${{ secrets.BREVO_API_KEY }} \
+          -e ADMIN_EMAIL_ADDRESS=${{ secrets.ADMIN_EMAIL_ADDRESS }} \
+          -e ADMIN_EMAIL_APP_PASSWORD=${{ secrets.ADMIN_EMAIL_APP_PASSWORD }} \
+          -e ADMIN_EMAIL_NAME=${{ secrets.ADMIN_EMAIL_NAME }} \
+          -e ACCESS_TOKEN_SECRET_SIGNATURE=${{ secrets.ACCESS_TOKEN_SECRET_SIGNATURE }} \
+          -e ACCESS_TOKEN_LIFE=${{ secrets.ACCESS_TOKEN_LIFE }} \
+          -e REFRESH_TOKEN_SECRET_SIGNATURE=${{ secrets.REFRESH_TOKEN_SECRET_SIGNATURE }} \
+          -e REFRESH_TOKEN_LIFE=${{ secrets.REFRESH_TOKEN_LIFE }} \
+          -e CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }} \
+          -e CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }} \
+          -e CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }} \
+          nguyen1976/trello-api
