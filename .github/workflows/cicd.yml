@@ -26,6 +26,10 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
+      - name: Stop old container
+        run: |
+          docker stop nodejs-app-container || true
+          docker rm nodejs-app-container || true
       - name: Pull image from docker hub
         run: docker pull nguyen1976/trello-api:latest
       - name: Run Docker Container
