@@ -12,7 +12,7 @@ import {
 
 //Funtion kiểm tra loại file nào được chấp nhận
 const customFileFilter = (req, file, callback) => {
-console.log("🚀 ~ multerUploadMiddleware.js:15 ~ file:", file)
+  console.log('🚀 ~ multerUploadMiddleware.js:15 ~ file:', file)
 
   //Đói với multer kiểm tra kiểu file thì sử dụng mimetype
   if (!ALLOW_COMMON_FILE_TYPES.includes(file.mimetype)) {

@@ -48,7 +48,7 @@ const START_SERVER = async () => {
   //Môi trường production (cụ thể đang support cho render)
   if (env.BUILD_MODE === 'production') {
     //Vì thằng env nó tự có PORT và sẽ tự chỉ định PORT cho mình lên sẽ như này....
-    server.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, '0.0.0.0', () => {
       // eslint-disable-next-line no-console
       console.log(
         `3. Production: ${env.AUTHOR} BE is running at PORT:${process.env.PORT}/`
