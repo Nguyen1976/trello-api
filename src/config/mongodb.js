@@ -6,6 +6,7 @@
 
 import { MongoClient, ServerApiVersion } from 'mongodb'
 import { env } from './environment.js'
+import path from 'path'
 
 let trelloDatabaseInstance = null
 
@@ -19,7 +20,8 @@ const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   tls: true,
-  tlsCAFile: '../../global-bundle.pem'
+  tlsCAFile: path.join(process.cwd(), 'global-bundle.pem')
+
 })
 
 export const CONNECT_DB = async () => {
