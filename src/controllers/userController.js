@@ -28,15 +28,15 @@ const login = async (req, res, next) => {
     //Xử lý trả về http only cookie
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true, //Tức là cookie chỉ gửi qua http FE sẽ k động vào được
-      secure: true,
-      samseSite: 'none',
+      secure: false,
+      sameSite: 'lax',
       maxAge: ms('14 days')
     })
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true, //Tức là cookie chỉ gửi qua http FE sẽ k động vào được
-      secure: true,
-      sameSite: 'none',
+      secure: false,
+      sameSite: 'lax',
       maxAge: ms('14 days')
     })
 
@@ -62,8 +62,8 @@ const refreshToken = async (req, res, next) => {
     const result = await userService.refreshToken(req.cookies?.refreshToken)
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: false,
+      sameSite: 'lax',
       maxAge: ms('14 days')
     })
     res.status(StatusCodes.OK).json(result)
