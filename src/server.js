@@ -13,6 +13,8 @@ import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
 import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
+import events from 'events'
+events.EventEmitter.defaultMaxListeners = 20
 
 
 const START_SERVER = async () => {
@@ -58,9 +60,7 @@ const START_SERVER = async () => {
   } else {
     server.listen(8017, '0.0.0.0', () => {
       // eslint-disable-next-line no-console
-      console.log(
-        `3. Local DEV: nguyen is running at 0.0.0.0:8017/`
-      )
+      console.log(`3. Local DEV: nguyen is running at 0.0.0.0:8017/`)
     })
   }
 
