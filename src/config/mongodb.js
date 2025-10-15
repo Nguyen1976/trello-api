@@ -17,8 +17,6 @@ const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
     strict: true,
     deprecationErrors: true
   },
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   tls: true,
   tlsCAFile: path.join(process.cwd(), 'global-bundle.pem')
 
