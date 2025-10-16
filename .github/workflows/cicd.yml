@@ -1,4 +1,4 @@
-name: Deploy Node Application
+name: Deploy Node API to ECR and Refresh ASG
 
 on:
   push:
@@ -6,51 +6,63 @@ on:
       - aws-production-env
 
 jobs:
-  build:
+  build_and_push_ecr:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      # 1. Cấu hình AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
+      # 2. Đăng nhập vào ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        
+      # 3. Định nghĩa Image URI
+      - name: Set ECR Image URI (latest tag)
+        id: set_uri
+        run: |
+          # Đảm bảo Repository Node API có tên là trello-node
+          ECR_URI=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME_NODE }}:latest
+          echo "ECR_URI=$ECR_URI" >> $GITHUB_OUTPUT
+
+      # 4. Build và Tag Image
       - name: Build Docker Image
-        run: docker build -t nguyen1976/trello-api .
+        run: docker build -t ${{ secrets.ECR_REPOSITORY_NAME_NODE }}:latest . 
+        
+      # 5. Tag và Push Image lên ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          docker tag ${{ secrets.ECR_REPOSITORY_NAME_NODE }}:latest ${{ steps.set_uri.outputs.ECR_URI }}
+          docker push ${{ steps.set_uri.outputs.ECR_URI }}
 
-      - name: Public Image to Docker Hub
-        run: docker push nguyen1976/trello-api:latest
+    # KHÔNG CẦN CHUYỂN OUTPUT VÌ CHÚNG TA KHÔNG CẦN BIẾN IMAGE_URI CHO ASG REFRESH
 
-  deploy:
-    needs: build
-    runs-on: self-hosted
+  # 6. Kích hoạt Instance Refresh
+  deploy_asg:
+    needs: build_and_push_ecr
+    runs-on: ubuntu-latest
     steps:
-      - name: Stop old container
+      - name: Configure AWS Credentials for ASG
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          
+      - name: Trigger ASG Instance Refresh
         run: |
-          docker stop nodejs-app-container || true
-          docker rm nodejs-app-container || true
-      - name: Pull image from docker hub
-        run: docker pull nguyen1976/trello-api:latest
-      - name: Create .env file
-        run: |
-          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
-          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
-          echo "LOCAL_DEV_APP_HOST=${{ secrets.LOCAL_DEV_APP_HOST }}" >> .env
-          echo "LOCAL_DEV_APP_PORT=${{ secrets.LOCAL_DEV_APP_PORT }}" >> .env
-          echo "AUTHOR=${{ secrets.AUTHOR }}" >> .env
-          echo "WEBSITE_DOMAIN_DEVELOPMENT=${{ secrets.WEBSITE_DOMAIN_DEVELOPMENT }}" >> .env
-          echo "WEBSITE_DOMAIN_PRODUCTION=${{ secrets.WEBSITE_DOMAIN_PRODUCTION }}" >> .env
-          echo "BREVO_API_KEY=${{ secrets.BREVO_API_KEY }}" >> .env
-          echo "ADMIN_EMAIL_ADDRESS=${{ secrets.ADMIN_EMAIL_ADDRESS }}" >> .env
-          echo "ADMIN_EMAIL_APP_PASSWORD=${{ secrets.ADMIN_EMAIL_APP_PASSWORD }}" >> .env
-          echo "ADMIN_EMAIL_NAME=${{ secrets.ADMIN_EMAIL_NAME }}" >> .env
-          echo "ACCESS_TOKEN_SECRET_SIGNATURE=${{ secrets.ACCESS_TOKEN_SECRET_SIGNATURE }}" >> .env
-          echo "ACCESS_TOKEN_LIFE=${{ secrets.ACCESS_TOKEN_LIFE }}" >> .env
-          echo "REFRESH_TOKEN_SECRET_SIGNATURE=${{ secrets.REFRESH_TOKEN_SECRET_SIGNATURE }}" >> .env
-          echo "REFRESH_TOKEN_LIFE=${{ secrets.REFRESH_TOKEN_LIFE }}" >> .env
-          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
-          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env
-          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env
-      - name: Run Node.js Docker container
-        run: docker run -d -p 8017:8017 --name nodejs-app-container --env-file .env nguyen1976/trello-api
+          echo "Bắt đầu Instance Refresh cho ASG Node API: ${{ secrets.ASG_NAME_NODE }}..."
+          
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${{ secrets.ASG_NAME_NODE }} \
+            --preferences '{"MinHealthyPercentage": 90}'
+          
+          echo "✅ Instance Refresh đã bắt đầu. Instance mới sẽ pull image mới nhất từ ECR."
