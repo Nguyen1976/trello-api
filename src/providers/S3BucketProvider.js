@@ -22,7 +22,7 @@ export const s3UploadBuffer = async (fileBuffer, folderName, mimeType) => {
     Key: key, // Đường dẫn file trong S3
     Body: fileBuffer, // Dữ liệu Buffer
     ContentType: mimeType, // Loại file
-    ACL: 'public-read' // Đảm bảo file có thể đọc công khai
+    // ACL: 'public-read' // Đảm bảo file có thể đọc công khai
   }
 
   const command = new PutObjectCommand(uploadParams)
