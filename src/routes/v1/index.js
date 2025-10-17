@@ -5,6 +5,9 @@ import { columnRoute } from './columnRoute'
 import { cardRoute } from './cardRoute'
 import { userRoute } from './userRoute'
 import { invitationRoute } from './invitationRoute'
+import { exec } from 'child_process'
+import fs from 'fs'
+const PID_FILE = '/tmp/stress_pid.txt'
 
 const Router = express.Router()
 
@@ -12,31 +15,63 @@ const Router = express.Router()
 Router.get('/status', (req, res) => {
   res.status(StatusCodes.OK).json({ message: 'APIs v1 are ready to use.' })
 })
-Router.get('/stress', (req, res) => {
-  const startTime = Date.now()
-  
-  const iterations = 10000000000
+Router.post('/start-stress-test', (req, res) => {
+  // Lệnh Bash cực nặng: Chạy một vòng lặp vô hạn ở chế độ nền.
+  // Lệnh này sẽ chiếm 100% của một core CPU cho đến khi bị kill.
+  const stressCommand = '(while true; do true; done) & echo $! > ' + PID_FILE
 
-  let result = 0
-
-  // Vòng lặp nặng - sẽ chặn Event Loop của Node.js
-  for (let i = 0; i < iterations; i++) {
-    result += i * Math.sin(i)
-    // Sau 1 giây, giả định là đủ tải, thoát ra
-    if (Date.now() - startTime > 1000) {
-      break
+  exec(stressCommand, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error starting stress: ${stderr}`)
+      return res.status(500).json({
+        status: 'Failed',
+        message: 'Could not start stress process on OS.',
+        error: error.message
+      })
     }
+
+    // PID được echo và lưu vào file sau khi lệnh chạy nền được kích hoạt
+    const pid = fs.readFileSync(PID_FILE, 'utf8').trim()
+    res.status(200).json({
+      status: 'Success',
+      message: `Nuclear Stress Test STARTED. PID: ${pid}. CPU will now be high.`,
+      pid: pid
+    })
+  })
+})
+
+Router.post('/stop-stress-test', (req, res) => {
+  if (!fs.existsSync(PID_FILE)) {
+    return res
+      .status(200)
+      .json({ status: 'Info', message: 'No active stress process found.' })
   }
 
-  const endTime = Date.now()
-  const duration = endTime - startTime
+  try {
+    const pid = fs.readFileSync(PID_FILE, 'utf8').trim()
 
-  res.status(200).json({
-    message: 'CPU Stress Test Completed',
-    duration_ms: duration,
-    iterations: iterations,
-    note: 'API was blocked for 1 second to maximize CPU usage.'
-  })
+    // Lệnh kill tiến trình
+    exec(`kill -9 ${pid}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error killing PID ${pid}: ${stderr}`)
+        // Có thể tiến trình đã tự kết thúc
+      }
+
+      // Dọn dẹp file PID
+      fs.unlinkSync(PID_FILE)
+      res.status(200).json({
+        status: 'Stopped',
+        message: `Stress process (PID: ${pid}) was successfully terminated.`,
+        pid: pid
+      })
+    })
+  } catch (e) {
+    // Xử lý lỗi đọc/ghi file
+    res.status(500).json({
+      status: 'Error',
+      message: 'Failed to read PID file or kill process.'
+    })
+  }
 })
 
 /*Board API */
