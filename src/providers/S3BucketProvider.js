@@ -32,7 +32,7 @@ export const s3UploadBuffer = async (fileBuffer, folderName, mimeType) => {
     const response = await s3Client.send(command)
 
     // 3. Tạo URL công khai sau khi upload thành công
-    const publicUrl = `https://${env.AWS_S3_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/${key}`
+    const publicUrl = `https://d2abx6cag6iy8d.cloudfront.net/${key}`
 
     // Trả về URL và Key để lưu vào database
     return {
