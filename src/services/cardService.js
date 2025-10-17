@@ -6,6 +6,7 @@
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
+import { s3UploadBuffer } from '~/providers/S3BucketProvider'
 const createNew = async (reqBody) => {
   try {
     const newCard = {
@@ -37,14 +38,19 @@ const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
     let updatedCard = {}
 
     if (cardCoverFile) {
-      const uploadResult = await CloudinaryProvider.streamUpload(
-        cardCoverFile.buffer,
-        'cards-trello-web'
-      )
+      // const uploadResult = await CloudinaryProvider.streamUpload(
+      //   cardCoverFile.buffer,
+      //   'cards-trello-web'
+      // )
 
+      const uploadResult = await s3UploadBuffer(
+        cardCoverFile.buffer,
+        'cards-trello-web',
+        cardCoverFile.mimetype
+      )
       //Lưu url file ảnh vào db (secure_url)
       updatedCard = await cardModel.update(cardId, {
-        cover: uploadResult.secure_url
+        cover: uploadResult.url
       })
     } else if (updateData.commentToAdd) {
       //Tạo dữ liệu comment để thêm vào db, cần bổ sung những field cần thiết
