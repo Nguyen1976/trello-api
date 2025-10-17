@@ -1,11 +1,12 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { env } from '~/config/environment.js'
 
-// Cấu hình S3 Client (Lấy thông tin từ process.env)
+// Cấu hình S3 Client (Lấy thông tin từ env)
 const s3Client = new S3Client({
-  region: process.env.AWS_S3_REGION,
+  region: env.AWS_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY
   }
 })
 
@@ -17,7 +18,7 @@ export const s3UploadBuffer = async (fileBuffer, folderName, mimeType) => {
   const key = `${folderName}/${Date.now()}_${originalFileName}`
 
   const uploadParams = {
-    Bucket: 'trello-web-images-nguyen1976',
+    Bucket: env.AWS_S3_BUCKET_NAME, // Tên bucket S3
     Key: key, // Đường dẫn file trong S3
     Body: fileBuffer, // Dữ liệu Buffer
     ContentType: mimeType, // Loại file
@@ -31,7 +32,7 @@ export const s3UploadBuffer = async (fileBuffer, folderName, mimeType) => {
     const response = await s3Client.send(command)
 
     // 3. Tạo URL công khai sau khi upload thành công
-    const publicUrl = `https://trello-web-images-nguyen1976.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${key}`
+    const publicUrl = `https://${env.AWS_S3_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/${key}`
 
     // Trả về URL và Key để lưu vào database
     return {
