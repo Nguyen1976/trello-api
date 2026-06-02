@@ -35,8 +35,7 @@ const isAuthorized = async (req, res, next) => {
       next(new ApiError(StatusCodes.GONE, 'Need to refresh token'))
       return
     }
-    //Nếu như cái accessToken nó k hợp lệ do bất kì điều j khác vụ hết hạn thì chúng ta cứ thawnfng tay trả về 401 cho BE gọi sign_out luôn
-    new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized!')
+    next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized!'))
   }
 }
 

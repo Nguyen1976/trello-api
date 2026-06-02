@@ -3,10 +3,10 @@ import ms from 'ms'
 import { userService } from '~/services/userService'
 import ApiError from '~/utils/ApiError'
 
-const createNew = async (req, resizeBy, next) => {
+const createNew = async (req, res, next) => {
   try {
     const createdUser = await userService.createNew(req.body)
-    resizeBy.status(StatusCodes.CREATED).json(createdUser)
+    res.status(StatusCodes.CREATED).json(createdUser)
   } catch (error) {
     next(error)
   }
@@ -26,17 +26,18 @@ const login = async (req, res, next) => {
     const result = await userService.login(req.body)
 
     //Xử lý trả về http only cookie
+    const secureCookie = process.env.NODE_ENV === 'production'
     res.cookie('accessToken', result.accessToken, {
-      httpOnly: true, //Tức là cookie chỉ gửi qua http FE sẽ k động vào được
-      secure: true,
-      samseSite: 'none',
+      httpOnly: true,
+      secure: secureCookie,
+      sameSite: secureCookie ? 'none' : 'lax',
       maxAge: ms('14 days')
     })
 
     res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true, //Tức là cookie chỉ gửi qua http FE sẽ k động vào được
-      secure: true,
-      sameSite: 'none',
+      httpOnly: true,
+      secure: secureCookie,
+      sameSite: secureCookie ? 'none' : 'lax',
       maxAge: ms('14 days')
     })
 

@@ -13,7 +13,7 @@ import ApiError from '~/utils/ApiError'
 export const corsOptions = {
   origin: function (origin, callback) {
     //Nếu mỗi trường là local thì dev cho qua luôn
-    if (env.BUILD_MODE === 'dev') {
+    if (env.BUILD_MODE === 'dev' || process.env.NODE_ENV === 'test') {
       return callback(null, true)
     }
 

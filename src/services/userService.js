@@ -76,7 +76,8 @@ const verifyAccount = async (reqBody) => {
       verifyToken: null
     }
 
-    const updatedUser = userModel.update(existUser._id, updateData)
+    const updatedResult = await userModel.update(existUser._id, updateData)
+    const updatedUser = updatedResult?.value ?? updatedResult
 
     return pickUser(updatedUser)
   } catch (error) {
