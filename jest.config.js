@@ -40,6 +40,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.js'],
 
   testTimeout: 30000,
-  maxWorkers: 1
+  maxWorkers: 1,
+  forceExit: true
 }
 

@@ -19,6 +19,7 @@
     "test:fuzz": "jest --testPathPatterns=fuzz",
     "test:mutation": "stryker run",
     "security:zap": "bash security/zap-passive-scan.sh",
+    "e2e:ensure-user": "cross-env BUILD_MODE=dev babel-node ./scripts/ensure-e2e-user.js",
     "lint:report": "eslint src --ext js -f stylish 2>&1 | tee ../docs/artifacts/eslint-api.txt || true"
   },
   "author": "",

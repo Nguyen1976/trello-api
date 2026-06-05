@@ -107,11 +107,12 @@ describe('Auth / Cookie / JWT black-box API', () => {
     // TC-BB-VER-03
     it('returns 406 when account is already active', async () => {
       const email = 'verify.already@example.com'
-      const user = await registerAndVerifyUser(app, email)
+      await registerAndVerifyUser(app, email)
 
-      const res = await request(app)
-        .put('/v1/users/verify')
-        .send({ email, token: user.verifyToken })
+      const res = await request(app).put('/v1/users/verify').send({
+        email,
+        token: '00000000-0000-0000-0000-000000000000'
+      })
       expect(res.status).toBe(StatusCodes.NOT_ACCEPTABLE)
     })
 

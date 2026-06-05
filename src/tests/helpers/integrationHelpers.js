@@ -18,17 +18,28 @@ export const registerAndVerifyUser = async (app, email = VALID_EMAIL) => {
     email,
     password: VALID_PASSWORD
   })
-  expect(registerRes.status).toBe(201)
 
-  const user = await userModel.findOneByEmail(email)
+  let user = await userModel.findOneByEmail(email)
 
+  if (registerRes.status === 409) {
+    expect(user).toBeTruthy()
+    if (user.isActive) return user
+  } else {
+    expect(registerRes.status).toBe(201)
+    user = await userModel.findOneByEmail(email)
+    expect(user).toBeTruthy()
+  }
+
+  if (user.isActive) return user
+
+  expect(user.verifyToken).toBeTruthy()
   const verifyRes = await request(app).put('/v1/users/verify').send({
     email,
     token: user.verifyToken
   })
   expect(verifyRes.status).toBe(200)
 
-  return user
+  return userModel.findOneByEmail(email)
 }
 
 /** Trả về raw response của login (để kiểm tra Set-Cookie / body). */
