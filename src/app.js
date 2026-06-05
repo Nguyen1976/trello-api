@@ -12,6 +12,9 @@ import cookieParser from 'cookie-parser'
 export const createApp = () => {
   const app = express()
 
+  // Ẩn header X-Powered-By để giảm lộ thông tin stack (OWASP ZAP passive finding).
+  app.disable('x-powered-by')
+
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store')
     next()

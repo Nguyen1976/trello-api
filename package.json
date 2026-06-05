@@ -18,6 +18,7 @@
     "test:unit": "jest --testPathPatterns=unit",
     "test:fuzz": "jest --testPathPatterns=fuzz",
     "test:mutation": "stryker run",
+    "security:zap": "bash security/zap-passive-scan.sh",
     "lint:report": "eslint src --ext js -f stylish 2>&1 | tee ../docs/artifacts/eslint-api.txt || true"
   },
   "author": "",

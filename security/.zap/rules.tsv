@@ -1,0 +1,11 @@
+# OWASP ZAP baseline rule config (passive scan)
+# Cột: <pluginId>\t<IGNORE|WARN|FAIL>\t<ghi chú>
+# Mặc định các rule còn lại = WARN. Liệt kê ở đây để kiểm soát mức độ.
+#
+# 10015	WARN	Incomplete or No Cache-control Header
+# 10020	WARN	Missing Anti-clickjacking Header (X-Frame-Options) - API JSON nên thường bỏ qua
+# 10021	WARN	X-Content-Type-Options Header Missing
+# 10035	WARN	Strict-Transport-Security Header (chỉ áp dụng khi chạy HTTPS)
+# 10038	WARN	Content Security Policy (CSP) Header Not Set - API JSON
+# 10096	IGNORE	Timestamp Disclosure - JWT iat/exp là chuẩn, không phải lỗi
+10096	IGNORE	Timestamp Disclosure (JWT iat/exp hợp lệ)
