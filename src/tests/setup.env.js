@@ -1,0 +1,8 @@
+process.env.NODE_ENV = 'test'
+process.env.BUILD_MODE = 'dev'
+process.env.WEBSITE_DOMAIN_DEVELOPMENT = 'http://localhost:5173'
+process.env.ACCESS_TOKEN_SECRET_SIGNATURE = 'test-access-secret-key-32chars!!'
+process.env.ACCESS_TOKEN_LIFE = '1h'
+process.env.REFRESH_TOKEN_SECRET_SIGNATURE = 'test-refresh-secret-key-32chars!'
+process.env.REFRESH_TOKEN_LIFE = '7d'
+process.env.AUTHOR = 'Test'

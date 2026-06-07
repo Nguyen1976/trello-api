@@ -1,21 +1,20 @@
-module.exports = {
-
+const sharedConfig = {
   testEnvironment: 'node',
-
   transform: {
-
     '^.+\\.js$': 'babel-jest'
-
   },
-
   moduleNameMapper: {
-
     '^~/(.*)$': '<rootDir>/src/$1'
-
   },
+  testTimeout: 30000,
+  testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/']
+}
 
+module.exports = {
+  ...sharedConfig,
+  maxWorkers: 1,
+  forceExit: true,
   coverageDirectory: 'coverage',
-
   collectCoverageFrom: [
     'src/utils/authUtils.js',
     'src/utils/boardUtils.js',
@@ -34,13 +33,24 @@ module.exports = {
       lines: 95
     }
   },
-
-  testMatch: ['**/tests/**/*.test.js'],
-
-  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.js'],
-
-  testTimeout: 30000,
-  maxWorkers: 1,
-  forceExit: true
+  projects: [
+    {
+      ...sharedConfig,
+      displayName: 'unit-fuzz',
+      testMatch: [
+        '<rootDir>/src/tests/unit/**/*.test.js',
+        '<rootDir>/src/tests/fuzz/**/*.test.js'
+      ],
+      setupFilesAfterEnv: ['<rootDir>/src/tests/setup.env.js']
+    },
+    {
+      ...sharedConfig,
+      displayName: 'integration',
+      testMatch: ['<rootDir>/src/tests/integration/**/*.test.js'],
+      setupFilesAfterEnv: [
+        '<rootDir>/src/tests/setup.env.js',
+        '<rootDir>/src/tests/setup.js'
+      ]
+    }
+  ]
 }
-

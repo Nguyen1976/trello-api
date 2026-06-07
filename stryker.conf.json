@@ -4,7 +4,7 @@
   "reporters": ["html", "clear-text", "progress"],
   "testRunner": "jest",
   "jest": {
-    "configFile": "jest.config.js"
+    "configFile": "jest.stryker.config.js"
   },
   "mutate": [
     "src/utils/authUtils.js",
@@ -17,7 +17,13 @@
     "break": 50
   },
   "timeoutMS": 60000,
-  "concurrency": 2,
+  "concurrency": 1,
+  "disableTypeChecks": false,
+  "ignorePatterns": [
+    "reports/**",
+    ".stryker-tmp/**",
+    "coverage/**"
+  ],
   "htmlReporter": {
     "fileName": "reports/mutation/mutation.html"
   }
