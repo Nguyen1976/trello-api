@@ -8,20 +8,35 @@ import { MongoClient, ServerApiVersion } from 'mongodb'
 import { env } from './environment.js'
 
 let trelloDatabaseInstance = null
+let mongoClientInstance = null
 
-//Khời tạo 1 đói tượng ClientInstance để connect tới mongodb
-const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true
+const getMongoUri = () => process.env.MONGODB_URI ?? env.MONGODB_URI
+
+const getDatabaseName = () => process.env.DATABASE_NAME ?? env.DATABASE_NAME
+
+const createMongoClient = () => {
+  const uri = getMongoUri()
+  if (!uri) {
+    throw new Error('MONGODB_URI is required')
   }
-})
+
+  return new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true
+    }
+  })
+}
 
 export const CONNECT_DB = async () => {
+  if (!mongoClientInstance) {
+    mongoClientInstance = createMongoClient()
+  }
+
   await mongoClientInstance.connect()
 
-  trelloDatabaseInstance = mongoClientInstance.db(env.DATABASE_NAME)
+  trelloDatabaseInstance = mongoClientInstance.db(getDatabaseName())
 }
 
 //Có tác dụng export trelloDatabaseInstance khi đã connect thành công và có thể dùng ở nhiều nơi khác nhau
@@ -31,5 +46,9 @@ export const GET_DB = () => {
 }
 
 export const CLOSE_DB = async () => {
+  if (!mongoClientInstance) return
+
   await mongoClientInstance.close()
+  mongoClientInstance = null
+  trelloDatabaseInstance = null
 }
