@@ -1,51 +1,53 @@
-# Trello API (Express + MongoDB)
+# Trello API (Express + MongoDB) — Tổng quan kiểm thử
 
-## Project UML
+Backend Node.js/Express + MongoDB. Tài liệu chi tiết: [../docs/TEST_PLAN.md](../docs/TEST_PLAN.md).
 
-![UML](./img/trello.png)
+## Tổng quan
 
----
+| Loại test | Kỹ thuật | Số lượng | Thư mục |
+|-----------|----------|----------|---------|
+| Unit | White-box (branch, BVA, EP, mock) | 70 test | `src/tests/unit/` |
+| Integration | Black-box API qua HTTP | 83 test / 10 file | `src/tests/integration/` |
+| Fuzz | Property-based (fast-check) | 9 property (300–1000 runs) | `src/tests/fuzz/` |
+| **Tổng tự động** | | **162 test** | |
 
-## Kiểm thử (Testing)
+- **Coverage:** 100% statements / branches / functions / lines trên 8 file trọng yếu (`utils/*`, `middlewares/authMiddleware.js`, `validations/*`).
+- **Mutation score:** 97.92% (Stryker, mutate 3 file `src/utils/*`).
+- **Passive security:** 7 ca `TC-SEC-PASSIVE-*` (kiểu OWASP ZAP passive) trong `integration/security.passive.integration.test.js`.
 
-Tài liệu đầy đủ: [../docs/TEST_PLAN.md](../docs/TEST_PLAN.md)
-
-### Scripts
+## Scripts
 
 | Lệnh | Mô tả |
 |------|--------|
-| `npm test` | Unit + integration + fuzz |
-| `npm run test:unit` | Chỉ unit |
-| `npm run test:integration` | Chỉ integration (supertest) |
-| `npm run test:coverage` | Coverage HTML trong `coverage/` |
+| `npm test` | Chạy unit + integration + fuzz |
+| `npm run test:unit` | Chỉ unit (white-box) |
+| `npm run test:integration` | Chỉ integration (Supertest) |
 | `npm run test:fuzz` | Fuzz với fast-check |
-| `npm run test:mutation` | Stryker mutation trên `src/utils` |
-| `npm run lint` | Static analysis (ESLint) |
+| `npm run test:coverage` | Báo cáo coverage HTML trong `coverage/` |
+| `npm run test:watch` | Chạy lại khi sửa file |
+| `npm run test:mutation` | Mutation testing (Stryker) → `reports/mutation/mutation.html` |
+| `npm run lint` | Phân tích tĩnh (ESLint) |
+| `npm run security:zap` | Passive scan bằng OWASP ZAP (script `security/`) |
 
-### White-box (Jest)
+## Cấu trúc test
 
-- `src/tests/unit/` — `authUtils`, `boardUtils`, `cardUtils`, column Joi BVA  
-- Comment nhánh trong test (ví dụ `// Nhánh: password.length < 6`)  
-- Coverage: utils, validations, `authMiddleware`
+```
+src/tests/
+├── unit/          # White-box: authUtils, boardUtils, cardUtils, authMiddleware, Joi validations
+├── integration/   # Black-box API: auth/board/column/card/invitation + security.passive
+├── fuzz/          # Property-based: auth, board, card, validation
+├── helpers/       # integrationHelpers.js (app, register, login, cookie)
+├── setup.js       # MongoDB in-memory (mongodb-memory-server), dọn DB sau mỗi test
+└── setup.env.js   # Gán JWT secrets cho môi trường test
+```
 
-### Black-box (integration)
+## Phương pháp
 
-- `src/tests/integration/` — HTTP qua supertest, không cần biết implementation  
-- MongoDB: `mongodb-memory-server` trong `src/tests/setup.js`  
-- Email: mock `SendEmailProvider` trong test auth  
+- **White-box:** test theo nhánh code (`if/else`, `try/catch`), có comment nhánh trong test; đo bằng coverage.
+- **Black-box:** gọi API thật qua Supertest, chỉ quan tâm input → response (status/body/header). Không cần `.env` thật — DB chạy in-memory, email được mock.
+- **Fuzz:** sinh input ngẫu nhiên hàng trăm–nghìn lần, kiểm tra contract của hàm (không crash, throw/return đúng).
+- **Mutation:** cố ý sửa hỏng code (mutant) để kiểm tra test có "giết" được lỗi — đánh giá chất lượng test.
 
-### Fuzz (nâng cao)
+## Công cụ
 
-`src/tests/fuzz/auth.fuzz.test.js` — random input, kiểm tra contract không crash.
-
-### Mutation (nâng cao)
-
-Cấu hình `stryker.conf.json`. Báo cáo: `reports/mutation/mutation.html`.
-
-### Môi trường test
-
-`setup.js` gán JWT secrets và DB in-memory. Không cần `.env` thật khi chạy Jest.
-
-### Export app cho test
-
-`src/app.js` — factory Express (không listen). Integration import từ đây.
+Jest · Supertest · mongodb-memory-server · fast-check · Stryker · babel-jest · ESLint.
